@@ -2,224 +2,197 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# ====================================
+# =========================
 # PAGE CONFIG
-# ====================================
-
+# =========================
 st.set_page_config(
-    page_title="Hotel Booking Cancellation Prediction",
+    page_title="Hotel Cancellation Prediction",
     page_icon="🏨",
     layout="wide"
 )
 
-# ====================================
+# =========================
 # LOAD MODEL
-# ====================================
-
+# =========================
 @st.cache_resource
 def load_model():
-    return joblib.load("hotel_cancellation_model.pkl")
+    data = joblib.load("hotel_cancellation_model.pkl")
+    return data["model"], data["features"]
 
-model = load_model()
+model, feature_names = load_model()
 
-# ====================================
-# TITLE
-# ====================================
-
-st.title("🏨 Hotel Booking Cancellation Prediction")
-
-st.write("""
-Predict whether a **hotel booking will be canceled or not** using a  
-**LightGBM Machine Learning Model**.
-
-Model: **LightGBM (Tuned)**  
-Project Year: **2026**
-""")
-
+# =========================
+# HEADER
+# =========================
+st.title("🏨 Hotel Booking Cancellation Prediction") 
+st.markdown( """ Machine Learning dashboard to predict **hotel booking cancellations** and analyze risk factors using a **LightGBM classification model**. """ )
 st.divider()
 
-# ====================================
-# USER INPUT
-# ====================================
+# =========================
+# SIDEBAR
+# =========================
+st.sidebar.header("Booking Information")
 
-st.header("Booking Information")
+lead_time = st.sidebar.slider("Lead Time (days before arrival)", 0, 447, 0)
 
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    hotel = st.selectbox("Hotel", ["Resort Hotel", "City Hotel"])
-    lead_time = st.number_input("Lead Time", 0, 800, 50)
-    arrival_date_year = st.selectbox("Arrival Year", [2015, 2016, 2017])
-
-    arrival_date_month = st.selectbox(
-        "Arrival Month",
-        ["1","2","3","4","5","6",
-         "7","8","9","10","11","12"]
-    )
-
-    arrival_date_week_number = st.number_input("Arrival Week Number", 1, 53, 30)
-    arrival_date_day_of_month = st.number_input("Arrival Day", 1, 31, 15)
-
-with col2:
-    stays_in_weekend_nights = st.number_input("Weekend Nights", 0, 10, 1)
-    stays_in_week_nights = st.number_input("Week Nights", 0, 20, 3)
-
-    adults = st.number_input("Adults", 1, 10, 2)
-    children = st.number_input("Children", 0, 5, 0)
-    babies = st.number_input("Babies", 0, 5, 0)
-
-    country = st.text_input("Country Code", "PRT")
-
-with col3:
-    meal = st.selectbox("Meal", ["BB","HB","FB","SC"])
-
-    market_segment = st.selectbox(
-        "Market Segment",
-        ["Online TA","Offline TA/TO","Direct","Groups","Corporate","Complementary","Aviation"]
-    )
-
-    distribution_channel = st.selectbox(
-        "Distribution Channel",
-        ["TA/TO","Direct","Corporate","GDS"]
-    )
-
-    is_repeated_guest = st.selectbox("Repeated Guest", [0,1])
-
-st.divider()
-
-# ====================================
-# BOOKING HISTORY
-# ====================================
-
-st.header("Booking History")
-
-col4, col5, col6 = st.columns(3)
-
-with col4:
-    previous_cancellations = st.number_input("Previous Cancellations",0,10,0)
-    previous_bookings_not_canceled = st.number_input("Previous Non-Canceled Bookings",0,20,0)
-
-with col5:
-    reserved_room_type = st.selectbox("Reserved Room Type", list("ABCDEFGH"))
-    assigned_room_type = st.selectbox("Assigned Room Type", list("ABCDEFGH"))
-
-with col6:
-    booking_changes = st.number_input("Booking Changes",0,20,0)
-
-st.divider()
-
-# ====================================
-# ADDITIONAL FEATURES
-# ====================================
-
-st.header("Additional Information")
-
-col7, col8, col9 = st.columns(3)
-
-with col7:
-    deposit_type = st.selectbox(
-        "Deposit Type",
-        ["No Deposit","Non Refund","Refundable"]
-    )
-
-    agent = st.number_input("Agent ID",0,500,0)
-
-with col8:
-    company = st.number_input("Company ID",0,500,0)
-    days_in_waiting_list = st.number_input("Days in Waiting List",0,400,0)
-
-with col9:
-    customer_type = st.selectbox(
-        "Customer Type",
-        ["Transient","Contract","Transient-Party","Group"]
-    )
-
-    adr = st.number_input("Average Daily Rate",0.0,1000.0,100.0)
-
-st.divider()
-
-col10, col11 = st.columns(2)
-
-with col10:
-    required_car_parking_spaces = st.number_input("Parking Spaces",0,10,0)
-
-with col11:
-    total_of_special_requests = st.number_input("Special Requests",0,10,0)
-
-# ====================================
-# CREATE INPUT DATA
-# ====================================
-
-input_data = pd.DataFrame({
-    "hotel":[hotel],
-    "lead_time":[lead_time],
-    "arrival_date_year":[arrival_date_year],
-    "arrival_date_month":[arrival_date_month],
-    "arrival_date_week_number":[arrival_date_week_number],
-    "arrival_date_day_of_month":[arrival_date_day_of_month],
-    "stays_in_weekend_nights":[stays_in_weekend_nights],
-    "stays_in_week_nights":[stays_in_week_nights],
-    "adults":[adults],
-    "children":[children],
-    "babies":[babies],
-    "meal":[meal],
-    "country":[country],
-    "market_segment":[market_segment],
-    "distribution_channel":[distribution_channel],
-    "is_repeated_guest":[is_repeated_guest],
-    "previous_cancellations":[previous_cancellations],
-    "previous_bookings_not_canceled":[previous_bookings_not_canceled],
-    "reserved_room_type":[reserved_room_type],
-    "assigned_room_type":[assigned_room_type],
-    "booking_changes":[booking_changes],
-    "deposit_type":[deposit_type],
-    "agent":[agent],
-    "company":[company],
-    "days_in_waiting_list":[days_in_waiting_list],
-    "customer_type":[customer_type],
-    "adr":[adr],
-    "required_car_parking_spaces":[required_car_parking_spaces],
-    "total_of_special_requests":[total_of_special_requests]
-})
-
-# ====================================
-# FEATURE ENGINEERING
-# ====================================
-
-input_data["total_guest"] = (
-    input_data["adults"] +
-    input_data["children"] +
-    input_data["babies"]
+adr = st.sidebar.number_input(
+    "ADR (Average Daily Rate)",
+    min_value=0.0,
+    max_value=252.0,
+    value=0.0
 )
 
-input_data["total_nights"] = (
-    input_data["stays_in_weekend_nights"] +
-    input_data["stays_in_week_nights"]
+total_nights = st.sidebar.slider("Total Nights", 1, 69, 1)
+
+total_guests = st.sidebar.slider("Total Guests", 1, 55, 1)
+
+previous_cancellations = st.sidebar.slider(
+    "Previous Cancellations",
+    0, 26, 0
 )
 
-input_data["booking_type"] = input_data["hotel"]
+deposit_type = st.sidebar.selectbox(
+    "Deposit Type",
+    ["No Deposit", "Non Refund", "Refundable"]
+)
 
-# ====================================
+customer_type = st.sidebar.selectbox(
+    "Customer Type",
+    ["Transient", "Transient-Party", "Contract", "Group"]
+)
+
+meal = st.sidebar.selectbox(
+    "Meal",
+    ["BB", "HB", "FB", "SC", "Undefined"]
+)
+
+booking_type = st.sidebar.selectbox(
+    "Booking Channel",
+    ["Direct", "Corporate", "Online Travel Agent"]
+)
+
+reserved_room_type = st.sidebar.selectbox(
+    "Reserved Room Type",
+    ["A","B","C","D","E","F","G","H","L"]
+)
+
+predict = st.sidebar.button("Predict")
+
+# =========================
+# MAIN PAGE
+# =========================
+col_left, col_right = st.columns([2,1])
+
+with col_left:
+    st.subheader("Booking Prediction")
+
+with col_right:
+    st.info("Enter booking information in the sidebar to generate prediction.")
+
+# =========================
 # PREDICTION
-# ====================================
+# =========================
+if predict:
 
-if st.button("Predict Cancellation"):
+    with st.spinner("Running prediction model..."):
 
-    prediction = model.predict(input_data)[0]
-    probability = model.predict_proba(input_data)[0][1]
+        input_data = {
+            "lead_time": lead_time,
+            "adr": adr,
+            "total_nights": total_nights,
+            "total_guests": total_guests,
+            "previous_cancellations": previous_cancellations,
+            "deposit_type": deposit_type,
+            "customer_type": customer_type,
+            "meal": meal,
+            "booking_type": booking_type,
+            "reserved_room_type": reserved_room_type
+        }
 
-    st.subheader("Prediction Result")
+        input_df = pd.DataFrame([input_data])
 
-    if prediction == 1:
-        st.error("⚠️ Booking will likely be **CANCELED**")
+        # Encoding
+        input_df = pd.get_dummies(input_df)
+
+        # Align columns
+        input_df = input_df.reindex(columns=feature_names, fill_value=0)
+
+        # Prediction
+        prediction = model.predict(input_df)[0]
+        probability = model.predict_proba(input_df)[0][1]
+
+    st.divider()
+
+    # =========================
+    # RISK LEVEL
+    # =========================
+    if probability < 0.3:
+        risk = "Low Risk"
+        color = "green"
+    elif probability < 0.7:
+        risk = "Medium Risk"
+        color = "orange"
     else:
-        st.success("✅ Booking will likely **NOT be canceled**")
+        risk = "High Risk"
+        color = "red"
 
-    st.metric(
-        label="Cancellation Probability",
-        value=f"{probability:.2%}"
+    # =========================
+    # METRICS
+    # =========================
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric("Cancellation Probability", f"{probability:.2%}")
+
+    with col2:
+        if prediction == 1:
+            st.metric("Prediction Result", "Canceled ❌")
+        else:
+            st.metric("Prediction Result", "Not Canceled ✅")
+
+    with col3:
+        st.metric("Risk Level", risk)
+
+    # =========================
+    # PROBABILITY BAR
+    # =========================
+    st.subheader("Cancellation Risk Level")
+
+    st.progress(probability)
+
+    # =========================
+    # BOOKING SUMMARY
+    # =========================
+    st.subheader("Booking Summary")
+
+    summary_df = pd.DataFrame([input_data])
+
+    st.dataframe(
+        summary_df,
+        use_container_width=True
     )
+
+    st.success("Prediction completed successfully!")
 
 st.divider()
 
-st.caption("Model: LightGBM Tuned | Streamlit App | Project 2026")
+st.markdown("### 📊 Model Details")
+
+st.markdown(
+"""
+This application utilizes a **Light Gradient Boosting Machine (LightGBM)** model
+that has been carefully **tuned using hyperparameter optimization techniques**
+to improve predictive performance.
+
+The model is designed to estimate the probability of **hotel booking cancellations**
+based on booking characteristics, guest information, and reservation details.
+
+**Project Information**
+
+- **Algorithm:** LightGBM  
+- **Model Type:** Binary Classification  
+- **Optimization:** Hyperparameter Tuning  
+- **Development Year:** 2026  
+- **Objective:** Predict hotel booking cancellation risk
+"""
+)
