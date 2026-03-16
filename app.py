@@ -3,6 +3,16 @@ import pandas as pd
 import joblib
 
 # ====================================
+# PAGE CONFIG
+# ====================================
+
+st.set_page_config(
+    page_title="Hotel Cancellation Prediction",
+    page_icon="🏨",
+    layout="wide"
+)
+
+# ====================================
 # LOAD MODEL
 # ====================================
 
@@ -14,188 +24,199 @@ def load_model():
 model = load_model()
 
 # ====================================
-# PAGE TITLE
+# TITLE
 # ====================================
 
 st.title("🏨 Hotel Booking Cancellation Prediction")
 
-st.write(
+st.caption(
 """
-This application predicts whether a hotel booking will be **Canceled or Not Canceled**
-using a trained **Machine Learning model**.
+Machine Learning application to predict whether a hotel booking
+will be **Canceled or Not Canceled** based on booking information.
 """
 )
 
+st.divider()
+
 # ====================================
+# SIDEBAR INPUT
+# ====================================
+
+st.sidebar.header("📋 Booking Input")
+
+# ------------------------------------
 # BOOKING INFORMATION
-# ====================================
+# ------------------------------------
 
-st.header("Booking Information")
+st.sidebar.subheader("Booking Information")
 
-hotel = st.selectbox(
+hotel = st.sidebar.selectbox(
     "Hotel",
-    ["Resort Hotel", "City Hotel"]
+    [
+        'Crystal Cove, Barbados Barbados',
+        'Greensboro Courtyard Greensboro, NC',
+        'The Westin Peachtree Plaza, Atlanta Atlanta, GA',
+        'Courtyard by Marriott Aberdeen Airport Aberdeen, United Kingdom',
+        'W New York – Union Square New York, NY',
+        'The Ritz-Carlton, Tokyo Tokyo, Japan',
+        'Las Vegas Marriott Las Vegas, NV',
+        'Heidelberg Marriott Hotel Heidelberg, Germany',
+        'Sheraton Grand Rio Hotel & Resort Rio de Janeiro, Brazil',
+        'Berlin Marriott Hotel Berlin, Germany',
+        'Frankfurt Marriott Hotel Frankfurt, Germany',
+        'Leipzig Marriott Hotel Leipzig, Germany',
+        'W Barcelona Barcelona, Spain',
+        'Anaheim Marriott Anaheim, CA',
+        'Orlando Airport Courtyard Orlando, FL'
+    ]
 )
 
-lead_time = st.number_input(
+lead_time = st.sidebar.number_input(
     "Lead Time (days)",
     min_value=0,
     max_value=365,
     value=30
 )
 
-arrival_month = st.selectbox(
+arrival_month = st.sidebar.selectbox(
     "Arrival Month",
-    [
-        "1","2","3","4","5","6",
-        "7","8","9","10","11","12"
-    ]
+    list(range(1,13))
 )
 
-arrival_week = st.slider(
+arrival_week = st.sidebar.slider(
     "Arrival Week Number",
-    1, 52, 20
+    1,52,20
 )
 
-arrival_day = st.slider(
+arrival_day = st.sidebar.slider(
     "Arrival Day of Month",
-    1, 31, 15
+    1,31,15
 )
 
-# ====================================
+# ------------------------------------
 # STAY INFORMATION
-# ====================================
+# ------------------------------------
 
-st.header("Stay Information")
+st.sidebar.subheader("Stay Information")
 
-weekend_nights = st.number_input(
+weekend_nights = st.sidebar.number_input(
     "Weekend Nights",
-    min_value=0,
-    max_value=10,
-    value=1
+    0,10,1
 )
 
-week_nights = st.number_input(
+week_nights = st.sidebar.number_input(
     "Week Nights",
-    min_value=0,
-    max_value=20,
-    value=2
+    0,20,2
 )
 
-# ====================================
+# ------------------------------------
 # GUEST INFORMATION
-# ====================================
+# ------------------------------------
 
-st.header("Guest Information")
+st.sidebar.subheader("Guest Information")
 
-adults = st.number_input(
+adults = st.sidebar.number_input(
     "Adults",
-    min_value=1,
-    max_value=10,
-    value=2
+    1,10,2
 )
 
-children = st.number_input(
+children = st.sidebar.number_input(
     "Children",
-    min_value=0,
-    max_value=5,
-    value=0
+    0,5,0
 )
 
-babies = st.number_input(
+babies = st.sidebar.number_input(
     "Babies",
-    min_value=0,
-    max_value=3,
-    value=0
+    0,3,0
 )
 
-# ====================================
+# ------------------------------------
 # CUSTOMER HISTORY
-# ====================================
+# ------------------------------------
 
-st.header("Customer History")
+st.sidebar.subheader("Customer History")
 
-previous_cancellations = st.number_input(
+previous_cancellations = st.sidebar.number_input(
     "Previous Cancellations",
-    min_value=0,
-    max_value=10,
-    value=0
+    0,10,0
 )
 
-previous_bookings = st.number_input(
+previous_bookings = st.sidebar.number_input(
     "Previous Bookings Not Canceled",
-    min_value=0,
-    max_value=20,
-    value=0
+    0,20,0
 )
 
-repeated_guest = st.selectbox(
+repeated_guest = st.sidebar.selectbox(
     "Repeated Guest",
     [0,1]
 )
 
-# ====================================
+# ------------------------------------
 # BOOKING DETAILS
-# ====================================
+# ------------------------------------
 
-st.header("Booking Details")
+st.sidebar.subheader("Booking Details")
 
-meal = st.selectbox(
+meal = st.sidebar.selectbox(
     "Meal",
     ["BB","HB","FB","SC"]
 )
 
-market_segment = st.selectbox(
+market_segment = st.sidebar.selectbox(
     "Market Segment",
-    ["Online TA","Offline TA/TO","Direct","Corporate","Complementary"]
+    ["Online TA","Offline TA/TO","Direct","Corporate"]
 )
 
-distribution_channel = st.selectbox(
+distribution_channel = st.sidebar.selectbox(
     "Distribution Channel",
     ["TA/TO","Direct","Corporate","GDS"]
 )
 
-deposit_type = st.selectbox(
+deposit_type = st.sidebar.selectbox(
     "Deposit Type",
     ["No Deposit","Refundable","Non Refund"]
 )
 
-customer_type = st.selectbox(
+customer_type = st.sidebar.selectbox(
     "Customer Type",
     ["Transient","Transient-Party","Contract","Group"]
 )
 
-# ====================================
+reserved_room_type = st.sidebar.selectbox(
+    "Reserved Room Type",
+    ["A","B","C","D","E","F","G","H","L"]
+)
+
+# ------------------------------------
 # PRICE INFORMATION
-# ====================================
+# ------------------------------------
 
-st.header("Price Information")
+st.sidebar.subheader("Price Information")
 
-adr = st.number_input(
+adr = st.sidebar.number_input(
     "Average Daily Rate (ADR)",
-    min_value=0.0,
-    value=100.0
+    0.0,300.0,100.0
 )
 
-special_requests = st.number_input(
+special_requests = st.sidebar.number_input(
     "Special Requests",
-    min_value=0,
-    max_value=5,
-    value=0
+    0,5,0
 )
 
-parking = st.number_input(
+parking = st.sidebar.number_input(
     "Required Parking Spaces",
-    min_value=0,
-    max_value=3,
-    value=0
+    0,3,0
 )
 
+predict_button = st.sidebar.button("Predict Cancellation")
+
 # ====================================
-# PREDICTION
+# MAIN DASHBOARD
 # ====================================
 
-if st.button("Predict Cancellation"):
+st.header("Prediction Dashboard")
+
+if predict_button:
 
     # ====================================
     # FEATURE ENGINEERING
@@ -212,7 +233,7 @@ if st.button("Predict Cancellation"):
         booking_type = "Long Term"
 
     # ====================================
-    # CREATE INPUT DATAFRAME
+    # INPUT DATAFRAME
     # ====================================
 
     input_data = pd.DataFrame({
@@ -246,8 +267,8 @@ if st.button("Predict Cancellation"):
         "previous_cancellations":[previous_cancellations],
         "previous_bookings_not_canceled":[previous_bookings],
 
-        "reserved_room_type":["A"],
-        "assigned_room_type":["A"],
+        "reserved_room_type":[reserved_room_type],
+        "assigned_room_type":[reserved_room_type],
 
         "booking_changes":[0],
 
@@ -267,10 +288,7 @@ if st.button("Predict Cancellation"):
         "total_of_special_requests":[special_requests],
 
         "reservation_status":["Check-Out"],
-        "reservation_status_date":["2024-01-01"],
-
-        "bookingID":[999999]
-
+        "reservation_status_date":["2024-01-01"]
     })
 
     # ====================================
@@ -281,14 +299,53 @@ if st.button("Predict Cancellation"):
     probability = model.predict_proba(input_data)[0][1]
 
     # ====================================
-    # RESULT
+    # RESULT DASHBOARD
     # ====================================
 
-    st.subheader("Prediction Result")
+    st.divider()
 
-    if prediction == 1:
-        st.error("⚠️ Booking likely to be **CANCELED**")
-    else:
-        st.success("✅ Booking likely **NOT canceled**")
+    col1, col2 = st.columns(2)
 
-    st.write(f"Cancellation Probability: **{probability:.2%}**")
+    with col1:
+
+        if prediction == 1:
+            st.error("⚠️ High Risk of Cancellation")
+        else:
+            st.success("✅ Booking is Safe")
+
+    with col2:
+
+        st.metric(
+            "Cancellation Probability",
+            f"{probability:.2%}"
+        )
+
+    st.write("### Probability Level")
+
+    st.progress(probability)
+
+    st.write(
+        f"The model predicts **{probability:.2%} probability** that this booking will be canceled."
+    )
+
+    st.divider()
+
+st.markdown("### 📌 Model Information")
+
+st.info(
+"""
+This prediction system is powered by a **LightGBM Machine Learning Model**
+that has been **hyperparameter tuned** to achieve optimal performance.
+
+The model was trained using historical hotel booking data and optimized
+to accurately predict the probability of booking cancellations.
+
+**Project Details:**
+
+- Model Algorithm : LightGBM
+- Model Optimization : Hyperparameter Tuning
+- Task : Binary Classification (Canceled vs Not Canceled)
+- Development Year : **2026**
+- Use Case : Hotel Booking Cancellation Prediction
+"""
+)
