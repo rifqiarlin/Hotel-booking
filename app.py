@@ -17,12 +17,11 @@ st.set_page_config(
 # ====================================
 
 @st.cache_resource
-def load_artifacts():
-    preprocessor = joblib.load("preprocessor.pkl")
-    model = joblib.load("model.pkl")
-    return preprocessor, model
+def load_model():
+    data = joblib.load("hotel_cancellation_model.pkl")
+    return data["model"], data["features"]
 
-preprocessor, model = load_artifacts()
+model, feature_names = load_model()
 
 # ====================================
 # TITLE
@@ -243,16 +242,10 @@ if predict_button:
     })
 
     # ====================================
-    # PREPROCESSING
-    # ====================================
-
-    X = preprocessor.transform(input_data)
-
-    # ====================================
     # PREDICTION
     # ====================================
-    prediction = model.predict(X)
-    probability = model.predict_proba(X)[0][1]
+    prediction = model.predict(input_data)[0]
+    probability = model.predict_proba(input_data)[0][1]
 
     st.divider()
 
