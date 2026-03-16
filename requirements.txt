@@ -1,7 +1,6 @@
 streamlit
-numpy
-lightgbm
-imbalanced-learn
-scikit-learn==1.6.1
 pandas
+numpy
+scikit-learn
+lightgbm
 joblib

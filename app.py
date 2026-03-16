@@ -7,21 +7,22 @@ import joblib
 # ====================================
 
 st.set_page_config(
-    page_title="Hotel Cancellation Prediction",
+    page_title="Hotel Booking Cancellation Prediction",
     page_icon="🏨",
     layout="wide"
 )
 
 # ====================================
-# LOAD MODEL
+# LOAD MODEL & PREPROCESSOR
 # ====================================
 
 @st.cache_resource
-def load_model():
-    model = joblib.load("hotel_cancellation_model.pkl")
-    return model
+def load_artifacts():
+    preprocessor = joblib.load("preprocess.pkl")
+    model = joblib.load("models.pkl")
+    return preprocessor, model
 
-model = load_model()
+preprocessor, model = load_artifacts()
 
 # ====================================
 # TITLE
@@ -32,7 +33,7 @@ st.title("🏨 Hotel Booking Cancellation Prediction")
 st.caption(
 """
 Machine Learning application to predict whether a hotel booking
-will be **Canceled or Not Canceled** based on booking information.
+will be **Canceled or Not Canceled** using a **LightGBM model**.
 """
 )
 
@@ -44,38 +45,20 @@ st.divider()
 
 st.sidebar.header("📋 Booking Input")
 
-# ------------------------------------
-# BOOKING INFORMATION
-# ------------------------------------
-
+# Booking Info
 st.sidebar.subheader("Booking Information")
 
 hotel = st.sidebar.selectbox(
     "Hotel",
     [
-        'Crystal Cove, Barbados Barbados',
-        'Greensboro Courtyard Greensboro, NC',
-        'The Westin Peachtree Plaza, Atlanta Atlanta, GA',
-        'Courtyard by Marriott Aberdeen Airport Aberdeen, United Kingdom',
-        'W New York – Union Square New York, NY',
-        'The Ritz-Carlton, Tokyo Tokyo, Japan',
-        'Las Vegas Marriott Las Vegas, NV',
-        'Heidelberg Marriott Hotel Heidelberg, Germany',
-        'Sheraton Grand Rio Hotel & Resort Rio de Janeiro, Brazil',
-        'Berlin Marriott Hotel Berlin, Germany',
-        'Frankfurt Marriott Hotel Frankfurt, Germany',
-        'Leipzig Marriott Hotel Leipzig, Germany',
-        'W Barcelona Barcelona, Spain',
-        'Anaheim Marriott Anaheim, CA',
-        'Orlando Airport Courtyard Orlando, FL'
+        'Resort Hotel',
+        'City Hotel'
     ]
 )
 
 lead_time = st.sidebar.number_input(
     "Lead Time (days)",
-    min_value=0,
-    max_value=365,
-    value=30
+    0,365,30
 )
 
 arrival_month = st.sidebar.selectbox(
@@ -93,10 +76,7 @@ arrival_day = st.sidebar.slider(
     1,31,15
 )
 
-# ------------------------------------
-# STAY INFORMATION
-# ------------------------------------
-
+# Stay Info
 st.sidebar.subheader("Stay Information")
 
 weekend_nights = st.sidebar.number_input(
@@ -109,31 +89,14 @@ week_nights = st.sidebar.number_input(
     0,20,2
 )
 
-# ------------------------------------
-# GUEST INFORMATION
-# ------------------------------------
-
+# Guest Info
 st.sidebar.subheader("Guest Information")
 
-adults = st.sidebar.number_input(
-    "Adults",
-    1,10,2
-)
+adults = st.sidebar.number_input("Adults",1,10,2)
+children = st.sidebar.number_input("Children",0,5,0)
+babies = st.sidebar.number_input("Babies",0,3,0)
 
-children = st.sidebar.number_input(
-    "Children",
-    0,5,0
-)
-
-babies = st.sidebar.number_input(
-    "Babies",
-    0,3,0
-)
-
-# ------------------------------------
-# CUSTOMER HISTORY
-# ------------------------------------
-
+# Customer History
 st.sidebar.subheader("Customer History")
 
 previous_cancellations = st.sidebar.number_input(
@@ -151,10 +114,7 @@ repeated_guest = st.sidebar.selectbox(
     [0,1]
 )
 
-# ------------------------------------
-# BOOKING DETAILS
-# ------------------------------------
-
+# Booking Details
 st.sidebar.subheader("Booking Details")
 
 meal = st.sidebar.selectbox(
@@ -184,13 +144,10 @@ customer_type = st.sidebar.selectbox(
 
 reserved_room_type = st.sidebar.selectbox(
     "Reserved Room Type",
-    ["A","B","C","D","E","F","G","H","L"]
+    ["A","B","C","D","E","F","G"]
 )
 
-# ------------------------------------
-# PRICE INFORMATION
-# ------------------------------------
-
+# Price Info
 st.sidebar.subheader("Price Information")
 
 adr = st.sidebar.number_input(
@@ -218,10 +175,7 @@ st.header("Prediction Dashboard")
 
 if predict_button:
 
-    # ====================================
-    # FEATURE ENGINEERING
-    # ====================================
-
+    # Feature Engineering
     total_guest = adults + children + babies
     total_nights = weekend_nights + week_nights
 
@@ -232,10 +186,7 @@ if predict_button:
     else:
         booking_type = "Long Term"
 
-    # ====================================
-    # INPUT DATAFRAME
-    # ====================================
-
+    # Input DataFrame
     input_data = pd.DataFrame({
 
         "hotel":[hotel],
@@ -292,15 +243,16 @@ if predict_button:
     })
 
     # ====================================
-    # MODEL PREDICTION
+    # PREPROCESSING
     # ====================================
 
-    prediction = model.predict(input_data)[0]
-    probability = model.predict_proba(input_data)[0][1]
+    X = preprocessor.transform(input_data)
 
     # ====================================
-    # RESULT DASHBOARD
+    # PREDICTION
     # ====================================
+    prediction = model.predict(X)
+    probability = model.predict_proba(X)[0][1]
 
     st.divider()
 
@@ -328,24 +280,25 @@ if predict_button:
         f"The model predicts **{probability:.2%} probability** that this booking will be canceled."
     )
 
-    st.divider()
+# ====================================
+# MODEL INFO
+# ====================================
 
-st.markdown("### 📌 Model Information")
+st.divider()
+
+st.markdown("### 📊 Model Information")
 
 st.info(
 """
-This prediction system is powered by a **LightGBM Machine Learning Model**
-that has been **hyperparameter tuned** to achieve optimal performance.
+This application uses a **LightGBM Machine Learning model** 
+that has been **hyperparameter tuned** to optimize predictive performance.
 
-The model was trained using historical hotel booking data and optimized
-to accurately predict the probability of booking cancellations.
+**Project Details**
 
-**Project Details:**
-
-- Model Algorithm : LightGBM
-- Model Optimization : Hyperparameter Tuning
-- Task : Binary Classification (Canceled vs Not Canceled)
-- Development Year : **2026**
+- Algorithm : LightGBM  
+- Model Type : Binary Classification  
+- Optimization : Hyperparameter Tuning  
+- Development Year : **2026**  
 - Use Case : Hotel Booking Cancellation Prediction
 """
 )
